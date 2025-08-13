@@ -1,0 +1,17 @@
+all:
+  vars:
+    lab_name: "${lab_name}"
+    region: "${region}"
+    updated_on: "${updated_on}"
+
+  children:
+    bastion:
+      hosts:
+        ${bastion_host_name}:
+          ansible_host: "${bastion_ansible_host}"
+          ansible_become: yes
+          ansible_user: "${bastion_ssh_user}"
+          ansible_ssh_private_key_file: "${bastion_ssh_key_path}"
+          ansible_port: "${bastion_ssh_pub_port}"
+          vpn_ip: "${bastion_ip}"
+          vpn_port: "${bastion_vpn_pub_port}"
