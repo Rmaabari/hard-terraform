@@ -219,11 +219,3 @@ app_proto=${engine_win_cdr_networking["proto"]}
 
 
 [customer_edge:children]
-
-[customer_edge:vars]
-%{ if cpe_priv_subnet_id != null }
-cpe_subnet_id=${cpe_priv_subnet_id}
-%{ endif }
-%{ if cpe_priv_subnet_block != null }
-cpe_subnet=${cpe_priv_subnet_block}
-%{ endif }

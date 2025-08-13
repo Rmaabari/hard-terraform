@@ -4,22 +4,8 @@ module "common_ssh" {
     public_key_file_path = var.public_key_file
 }
 
-module "network" {
-    source              = "../../../lib/awscc/network"
-    enable_vpc_dnsnames = var.enable_vpc_dnsnames
-    cidr_vpc_block      = var.cidr_vpc_block
-    entry_pub_subnet    = var.entry_pub_subnet
-    engines_pub_subnet  = var.engines_pub_subnet
-    engines_priv_subnet = var.engines_priv_subnet
-    core_priv_subnet    = var.core_priv_subnet
-    cpe_priv_subnet     = var.cpe_priv_subnet
-    oxy_carrier_replicas           = var.oxy_carrier_replicas
-    oxy_carrier_network_interface_id = var.oxy_carrier_replicas == 1 ? module.oxy_carrier.primary_nic[0] : null
-    #oxy_carrier_network_interface_id = module.oxy_carrier.primary_nic[0]
-    vpc_tags = { 
-        Name  = var.lab_name
-        "lab" = var.lab_name
-    }
+data "aws_route_table" "core_priv" {
+  subnet_id = var.core_priv_subnet_id
 }
 
 # module "s3_endpoint" {
@@ -65,8 +51,8 @@ module "bastion_host" {
   source                = "../../../lib/awscc/bastion_host"
   image_id              = var.bastion_ami
   instance_type         = var.bastion_size
-  vpc_id                = module.network.vpc_id
-  subnet_id             = module.network.entry_pub_subnet_id
+  vpc_id                = var.vpc_id
+  subnet_id             = var.entry_pub_subnet_id
   ssh_key_name          = module.common_ssh.ssh_key_name
   networking            = var.bastion_networking 
   volume_size           = var.bastion_disk_size
@@ -86,8 +72,8 @@ module "control_host" {
     source        = "../../../lib/awscc/control_host"
     ami           = var.control_host_ami
     instance_type = var.control_host_size
-    vpc_id        = module.network.vpc_id
-    subnet_id     = module.network.core_priv_subnet_id
+    vpc_id        = var.vpc_id
+    subnet_id     = var.core_priv_subnet_id
     ssh_key_name  = module.common_ssh.ssh_key_name
     networking    = var.control_host_networking
     disk_size     = var.control_host_disk_size
@@ -105,8 +91,8 @@ module "oxy_carrier" {
     source        = "../../../lib/awscc/oxy_carrier"
     ami           = var.oxy_carrier_ami
     instance_type = var.oxy_carrier_size
-    vpc_id        = module.network.vpc_id
-    subnet_id     = module.network.entry_pub_subnet_id
+    vpc_id        = var.vpc_id
+    subnet_id     = var.entry_pub_subnet_id
     ssh_key_name  = module.common_ssh.ssh_key_name
     networking    = var.oxy_carrier_networking
     source_dest_check = var.oxy_carrier_source_dest_check
@@ -126,8 +112,8 @@ module "k3s_core_cluster" {
     source         = "../../../lib/awscc/k3s"
     cluster_name   = "core-k3s"
     ebs_csi_policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonEBSCSIDriverPolicy"
-    vpc_id         = module.network.vpc_id
-    subnet_id      = module.network.core_priv_subnet_id
+    vpc_id         = var.vpc_id
+    subnet_id      = var.core_priv_subnet_id
     amis           = var.k3s_node_ami
     instance_types = var.k3s_node_size
     networking     = var.k3s_networking
@@ -151,9 +137,9 @@ module "k3s_core_cluster" {
 
 module "ec2_endpoint" {
   source              = "../../../lib/awscc/endpoints"
-  vpc_id              = module.network.vpc_id
-  subnet_ids          = [module.network.core_priv_subnet_id]
-  route_table_ids     = [module.network.core_priv_subnet_route_table_id]
+  vpc_id              = var.vpc_id
+  subnet_ids          = [var.core_priv_subnet_id]
+  route_table_ids     = [data.aws_route_table.core_priv.id]
   private_dns_enabled = true
   region              = var.region
   tags = {
@@ -174,7 +160,7 @@ module "engines_role" {
     source              = "../../../lib/awscc/roles"
     profile_name  = var.engines_profile_name
     role_name     = var.engines_role_name
-    subnet_id     = module.network.engines_priv_subnet_id
+    subnet_id     = var.engines_priv_subnet_id
     lab_name      = var.lab_name
     tags          = {
         Name       = var.engines_role_name,
@@ -189,8 +175,8 @@ module "lnx_metadata" {
     ami           = var.lnx_metadata_ami
     instance_type = var.lnx_metadata_size
     replicas      = var.lnx_metadata_replicas
-    vpc_id        = module.network.vpc_id
-    subnet_id     = module.network.engines_priv_subnet_id
+    vpc_id        = var.vpc_id
+    subnet_id     = var.engines_priv_subnet_id
     ssh_key_name  = module.common_ssh.ssh_key_name
     disk_size     = var.lnx_metadata_disk_size
     networking    = var.lnx_metadata_networking
@@ -212,8 +198,8 @@ module "lnx_dataml" {
     ami           = var.lnx_dataml_ami
     instance_type = var.lnx_dataml_size
     replicas      = var.lnx_dataml_replicas
-    vpc_id        = module.network.vpc_id
-    subnet_id     = module.network.engines_priv_subnet_id
+    vpc_id        = var.vpc_id
+    subnet_id     = var.engines_priv_subnet_id
     ssh_key_name  = module.common_ssh.ssh_key_name
     disk_size     = var.lnx_dataml_disk_size 
     networking    = var.lnx_dataml_networking
@@ -235,8 +221,8 @@ module "lnx_pestatic" {
     ami           = var.lnx_pestatic_ami
     instance_type = var.lnx_pestatic_size
     replicas      = var.lnx_pestatic_replicas
-    vpc_id        = module.network.vpc_id
-    subnet_id     = module.network.engines_priv_subnet_id
+    vpc_id        = var.vpc_id
+    subnet_id     = var.engines_priv_subnet_id
     ssh_key_name  = module.common_ssh.ssh_key_name
     disk_size     = var.lnx_pestatic_disk_size 
     networking    = var.lnx_pestatic_networking
@@ -257,8 +243,8 @@ module "lnx_extractor" {
     ami           = var.lnx_extractor_ami
     instance_type = var.lnx_extractor_size
     replicas      = var.lnx_extractor_replicas
-    vpc_id        = module.network.vpc_id
-    subnet_id     = module.network.engines_priv_subnet_id
+    vpc_id        = var.vpc_id
+    subnet_id     = var.engines_priv_subnet_id
     ssh_key_name  = module.common_ssh.ssh_key_name
     disk_size     = var.lnx_extractor_disk_size 
     networking    = var.lnx_extractor_networking
@@ -280,8 +266,8 @@ module "win_eset" {
     source        = "../../../lib/awscc/engines/win_common"
     ami           = var.win_eset_ami
     instance_type = var.win_eset_size
-    vpc_id        = module.network.vpc_id
-    subnet_id     = module.network.engines_pub_subnet_id
+    vpc_id        = var.vpc_id
+    subnet_id     = var.engines_priv_subnet_id
     disk_size     = var.win_eset_disk_size 
     networking    = var.win_eset_networking
     public_key_file_path  = var.public_key_file
@@ -301,8 +287,8 @@ module "win_bitdefender" {
     source        = "../../../lib/awscc/engines/win_common"
     ami           = var.win_bitdefender_ami
     instance_type = var.win_bitdefender_size
-    vpc_id        = module.network.vpc_id
-    subnet_id     = module.network.engines_pub_subnet_id
+    vpc_id        = var.vpc_id
+    subnet_id     = var.engines_priv_subnet_id
     disk_size     = var.win_bitdefender_disk_size 
     networking    = var.win_bitdefender_networking
     public_key_file_path  = var.public_key_file
@@ -322,8 +308,8 @@ module "win_windefender" {
     source        = "../../../lib/awscc/engines/win_common"
     ami           = var.win_windefender_ami
     instance_type = var.win_windefender_size
-    vpc_id        = module.network.vpc_id
-    subnet_id     = module.network.engines_pub_subnet_id
+    vpc_id        = var.vpc_id
+    subnet_id     = var.engines_priv_subnet_id
     disk_size     = var.win_windefender_disk_size 
     networking    = var.win_windefender_networking
     public_key_file_path  = var.public_key_file
@@ -343,8 +329,8 @@ module "win_extractor" {
     source        = "../../../lib/awscc/engines/win_common"
     ami           = var.win_extractor_ami
     instance_type = var.win_extractor_size
-    vpc_id        = module.network.vpc_id
-    subnet_id     = module.network.engines_priv_subnet_id
+    vpc_id        = var.vpc_id
+    subnet_id     = var.engines_priv_subnet_id
     disk_size     = var.win_extractor_disk_size 
     networking    = var.win_extractor_networking
     public_key_file_path  = var.public_key_file
@@ -364,8 +350,8 @@ module "win_cdr" {
     source        = "../../../lib/awscc/engines/win_common"
     ami           = var.win_cdr_ami
     instance_type = var.win_cdr_size
-    vpc_id        = module.network.vpc_id
-    subnet_id     = module.network.engines_priv_subnet_id
+    vpc_id        = var.vpc_id
+    subnet_id     = var.engines_priv_subnet_id
     disk_size     = var.win_cdr_disk_size 
     networking    = var.win_cdr_networking
     public_key_file_path  = var.public_key_file
@@ -404,8 +390,8 @@ module "active_directory" {
     source        = "../../../lib/aws/win_ec2"
     ami           = var.win_ad_ami
     instance_type = var.win_ad_size
-    vpc_id        = module.network.vpc_id
-    subnet_id     = module.network.entry_pub_subnet_id
+    vpc_id        = var.vpc_id
+    subnet_id     = var.entry_pub_subnet_id
     disk_size     = var.win_ad_disk_size 
     networking    = var.win_ad_networking
     public_key_file_path  = var.public_key_file
@@ -423,8 +409,8 @@ module "client" {
     source        = "../../../lib/aws/win_ec2"
     ami           = var.win_client_ami
     instance_type = var.win_client_size
-    vpc_id        = module.network.vpc_id
-    subnet_id     = module.network.entry_pub_subnet_id
+    vpc_id        = var.vpc_id
+    subnet_id     = var.entry_pub_subnet_id
     disk_size     = var.win_client_disk_size 
     networking    = var.win_client_networking
     public_key_file_path  = var.public_key_file

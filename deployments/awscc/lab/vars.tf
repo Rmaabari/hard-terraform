@@ -51,6 +51,26 @@ variable "cidr_vpc_block" {
   description = "ip block for vpc"
 }
 
+variable "vpc_id" {
+  type        = string
+  description = "ID of existing VPC"
+}
+
+variable "entry_pub_subnet_id" {
+  type        = string
+  description = "ID of existing entry public subnet"
+}
+
+variable "engines_priv_subnet_id" {
+  type        = string
+  description = "ID of existing engines private subnet"
+}
+
+variable "core_priv_subnet_id" {
+  type        = string
+  description = "ID of existing core private subnet"
+}
+
 variable "entry_pub_subnet" {
   type        = map(string)
   description = "pub subnet for vpn. required keys: cidr_block, cidr_reserved_block."
@@ -69,12 +89,6 @@ variable "engines_priv_subnet" {
 variable "core_priv_subnet" {
   type        = map(string)
   description = "priv subnet for core. required keys: cidr_block, cidr_reserved_block."
-}
-
-variable "cpe_priv_subnet" {
-  type        = map(string)
-  description = "priv subnet for cpe. required keys: cidr_block, cidr_reserved_block."
-  default = {}
 }
 # EC2 VPC ENDPOINT
 
