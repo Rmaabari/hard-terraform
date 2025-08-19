@@ -4,10 +4,6 @@ module "common_ssh" {
     public_key_file_path = var.public_key_file
 }
 
-data "aws_route_table" "core_priv" {
-  subnet_id = var.core_priv_subnet_id
-}
-
 # module "s3_endpoint" {
 #     source      = "../../../lib/awscc/s3_endpoint"
 #     vpc_id      = module.network.vpc_id
@@ -139,7 +135,7 @@ module "ec2_endpoint" {
   source              = "../../../lib/awscc/endpoints"
   vpc_id              = var.vpc_id
   subnet_ids          = [var.core_priv_subnet_id]
-  route_table_ids     = [data.aws_route_table.core_priv.id]
+  route_table_ids     = [var.core_priv_route_table_id]
   private_dns_enabled = true
   region              = var.region
   tags = {

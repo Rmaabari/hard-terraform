@@ -71,6 +71,11 @@ variable "core_priv_subnet_id" {
   description = "ID of existing core private subnet"
 }
 
+variable "core_priv_route_table_id" {
+  type        = string
+  description = "ID of the route table associated with the core private subnet"
+}
+
 variable "entry_pub_subnet" {
   type        = map(string)
   description = "pub subnet for vpn. required keys: cidr_block, cidr_reserved_block."

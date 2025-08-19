@@ -2,6 +2,8 @@
 vpc_id              = "12345678"
 core_priv_subnet_id = "87654321"
 engines_priv_subnet_id = "963258741"
+# ID for the core private subnet's route table
+core_priv_route_table_id = "rtb-COREPRIV"
 # Replace the following placeholder IDs with real subnet IDs
 entry_pub_subnet_id   = "subnet-ENTRY"
 
