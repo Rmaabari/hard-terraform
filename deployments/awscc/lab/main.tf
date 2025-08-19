@@ -267,7 +267,7 @@ module "win_eset" {
     ami           = var.win_eset_ami
     instance_type = var.win_eset_size
     vpc_id        = var.vpc_id
-    subnet_id     = var.engines_pub_subnet_id
+    subnet_id     = var.engines_priv_subnet_id
     disk_size     = var.win_eset_disk_size 
     networking    = var.win_eset_networking
     public_key_file_path  = var.public_key_file
@@ -288,7 +288,7 @@ module "win_bitdefender" {
     ami           = var.win_bitdefender_ami
     instance_type = var.win_bitdefender_size
     vpc_id        = var.vpc_id
-    subnet_id     = var.engines_pub_subnet_id
+    subnet_id     = var.engines_priv_subnet_id
     disk_size     = var.win_bitdefender_disk_size 
     networking    = var.win_bitdefender_networking
     public_key_file_path  = var.public_key_file
@@ -309,7 +309,7 @@ module "win_windefender" {
     ami           = var.win_windefender_ami
     instance_type = var.win_windefender_size
     vpc_id        = var.vpc_id
-    subnet_id     = var.engines_pub_subnet_id
+    subnet_id     = var.engines_priv_subnet_id
     disk_size     = var.win_windefender_disk_size 
     networking    = var.win_windefender_networking
     public_key_file_path  = var.public_key_file

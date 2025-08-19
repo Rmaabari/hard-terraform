@@ -4,8 +4,6 @@ core_priv_subnet_id = "87654321"
 engines_priv_subnet_id = "963258741"
 # Replace the following placeholder IDs with real subnet IDs
 entry_pub_subnet_id   = "subnet-ENTRY"
-engines_pub_subnet_id = "subnet-ENG-PUB"
-cpe_priv_subnet_id    = "subnet-CPE"
 
 lab_name = "lightrail-prod"
 region   = "il-central-1"
@@ -23,13 +21,6 @@ entry_pub_subnet = {
   tag                = "entry_subnet"
 }
 
-engines_pub_subnet = {
-  cidr_block         = "10.0.1.0/24"
-  cidr_reserved_block = "10.0.1.248/29"
-  internet           = "disabled"
-  tag                = "engines_pub_subnet"
-}
-
 engines_priv_subnet = {
   cidr_block = "10.0.3.0/24"
   internet   = "disabled"
@@ -42,8 +33,6 @@ core_priv_subnet = {
   internet           = "enabled"
   tag                = "core_subnet"
 }
-
-cpe_priv_subnet = {}
 
 bastion_ami       = "ami-005cb5968fa54fc60"
 bastion_size      = "t3.xlarge"

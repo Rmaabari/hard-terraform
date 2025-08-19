@@ -30,8 +30,6 @@ resource "local_file" "ansible_inventory" {
         core_priv_subnet                  = var.core_priv_subnet["cidr_block"],
         core_priv_subnet_internet         = var.core_priv_subnet["internet"],
         entry_pub_subnet                  = var.entry_pub_subnet["cidr_block"],
-        engines_pub_subnet                = var.engines_pub_subnet["cidr_block"],
-        engines_pub_subnet_internet       = var.engines_pub_subnet["internet"],
         engines_priv_subnet               = var.engines_priv_subnet["cidr_block"],
         engines_priv_subnet_internet      = var.engines_priv_subnet["internet"],
         engine_fta_networking             = module.lnx_metadata.app_network,
@@ -42,9 +40,7 @@ resource "local_file" "ansible_inventory" {
         engine_win_bitdefender_networking = module.win_bitdefender.app_network,
         engine_win_windefender_networking = module.win_windefender.app_network,
         engine_win_extractor_networking   = module.win_extractor.app_network,
-        engine_win_cdr_networking         = module.win_cdr.app_network,
-        cpe_priv_subnet_id                = var.cpe_priv_subnet_id,
-        cpe_priv_subnet_block             = lookup(var.cpe_priv_subnet, "cidr_block", null)
+        engine_win_cdr_networking         = module.win_cdr.app_network
     }
   )
   filename = "/tmp/inventory.ini"
