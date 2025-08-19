@@ -61,11 +61,6 @@ variable "entry_pub_subnet_id" {
   description = "ID of existing entry public subnet"
 }
 
-variable "engines_pub_subnet_id" {
-  type        = string
-  description = "ID of existing engines public subnet"
-}
-
 variable "engines_priv_subnet_id" {
   type        = string
   description = "ID of existing engines private subnet"
@@ -76,20 +71,9 @@ variable "core_priv_subnet_id" {
   description = "ID of existing core private subnet"
 }
 
-variable "cpe_priv_subnet_id" {
-  type        = string
-  description = "ID of existing cpe private subnet"
-  default     = ""
-}
-
 variable "entry_pub_subnet" {
   type        = map(string)
   description = "pub subnet for vpn. required keys: cidr_block, cidr_reserved_block."
-}
-
-variable "engines_pub_subnet" {
-  type        = map(string)
-  description = "pub subnet for engines.required keys: cidr_block, cidr_reserved_block."
 }
 
 variable "engines_priv_subnet" {
@@ -100,12 +84,6 @@ variable "engines_priv_subnet" {
 variable "core_priv_subnet" {
   type        = map(string)
   description = "priv subnet for core. required keys: cidr_block, cidr_reserved_block."
-}
-
-variable "cpe_priv_subnet" {
-  type        = map(string)
-  description = "priv subnet for cpe. required keys: cidr_block, cidr_reserved_block."
-  default = {}
 }
 # EC2 VPC ENDPOINT
 
