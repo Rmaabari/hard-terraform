@@ -217,7 +217,7 @@ module "lnx_dataml" {
 }
 
 module "lnx_pestatic" {
-    source        = "../../../lib/aws/engines/lnx_pestatic"
+    source        = "../../../lib/awscc/engines/lnx_pestatic"
     ami           = var.lnx_pestatic_ami
     instance_type = var.lnx_pestatic_size
     replicas      = var.lnx_pestatic_replicas
@@ -386,43 +386,44 @@ module "win_cdr" {
 #     }
 # }
 
-module "active_directory" {
-    source        = "../../../lib/aws/win_ec2"
-    ami           = var.win_ad_ami
-    instance_type = var.win_ad_size
-    vpc_id        = var.vpc_id
-    subnet_id     = var.entry_pub_subnet_id
-    disk_size     = var.win_ad_disk_size 
-    networking    = var.win_ad_networking
-    public_key_file_path  = var.public_key_file
-    purpose       = "cpe-dc"
-    replicas      = var.win_ad_replicas
-    tags          = {
-        "lab"     = var.lab_name,
-        "type"    = "cpe",
-        "os"      = "win",
-        "purpose" = "dc"
-    }
-}
+#module "active_directory" {
+#    source        = "../../../lib/aws/win_ec2"
+#    ami           = var.win_ad_ami
+#    instance_type = var.win_ad_size
+#    vpc_id        = var.vpc_id
+#    subnet_id     = var.entry_pub_subnet_id
+#    disk_size     = var.win_ad_disk_size 
+#    networking    = var.win_ad_networking
+#    public_key_file_path  = var.public_key_file
+#    purpose       = "cpe-dc"
+#    replicas      = var.win_ad_replicas
+#    tags          = {
+#        "lab"     = var.lab_name,
+#        "type"    = "cpe",
+#        "os"      = "win",
+#        "purpose" = "dc"
+#    }
+#}
+#
+#module "client" {
+#    source        = "../../../lib/aws/win_ec2"
+#    ami           = var.win_client_ami
+#    instance_type = var.win_client_size
+#    vpc_id        = var.vpc_id
+#    subnet_id     = var.entry_pub_subnet_id
+#    disk_size     = var.win_client_disk_size 
+#    networking    = var.win_client_networking
+#    public_key_file_path  = var.public_key_file
+#    purpose       = "cpe-client"
+#    replicas      = var.win_client_replicas
+#   tags          = {
+#        "lab"     = var.lab_name,
+#        "type"    = "cpe",
+#        "os"      = "win"
+#        "purpose" = "client"
+#    }
+#}
 
-module "client" {
-    source        = "../../../lib/aws/win_ec2"
-    ami           = var.win_client_ami
-    instance_type = var.win_client_size
-    vpc_id        = var.vpc_id
-    subnet_id     = var.entry_pub_subnet_id
-    disk_size     = var.win_client_disk_size 
-    networking    = var.win_client_networking
-    public_key_file_path  = var.public_key_file
-    purpose       = "cpe-client"
-    replicas      = var.win_client_replicas
-    tags          = {
-        "lab"     = var.lab_name,
-        "type"    = "cpe",
-        "os"      = "win"
-        "purpose" = "client"
-    }
-}
 
 # module "swg_host" {
 #     source        = "../../../lib/aws/swg_host"
