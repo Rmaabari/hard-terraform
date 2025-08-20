@@ -1,0 +1,2 @@
+deployments/awscc/lab/.terraform/** filter=lfs diff=lfs merge=lfs -text
+*.tfstate filter=lfs diff=lfs merge=lfs -text

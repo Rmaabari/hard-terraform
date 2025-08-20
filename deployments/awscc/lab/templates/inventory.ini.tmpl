@@ -1,0 +1,221 @@
+[all:vars]
+region=${region}
+domain=${domain}
+lab=${lab}
+vpc_network=${vpc_block}
+vpc_id=${vpc_id}
+
+#
+# ENTRY SUBNET
+#
+[entry_subnet:vars]
+subnet_id=${entry_pub_subnet_id}
+entry_subnet=${entry_pub_subnet}
+internet=true
+
+[entry_subnet:children]
+bastion
+active_directory
+client
+
+# only render bastion vars if we actually have a host
+%{ if length(ansible_group_bastion) > 0 }
+[bastion:vars]
+ansible_user=root
+ansible_become=true
+vpn_port=${ansible_group_bastion[0]["vpn_port"]}
+private_ip=${ansible_group_bastion[0]["private_ip"]}
+%{ endif }
+
+# loop over the one (or more) bastion hosts
+[bastion]
+%{ for host in ansible_group_bastion ~}
+${host["name"]}-entry ansible_host=${host["public_ip"]} ansible_connection=local
+%{ endfor ~}
+
+[active_directory]
+%{ for host in ansible_group_dc ~}
+${host["name"]} ansible_host=${host["private_ip"]} public_ip=${host["public_ip"]}
+%{ endfor ~}
+
+[client]
+%{ for host in ansible_group_client ~}
+${host["name"]} ansible_host=${host["private_ip"]} public_ip=${host["public_ip"]}
+%{ endfor ~}
+
+#
+# CORE SUBNET
+#
+[core_net:vars]
+subnet_id=${core_priv_subnet_id}
+internet=${core_priv_subnet_internet}
+core_subnet=${core_priv_subnet}
+%{ if length(ansible_group_core_k3s_lb) > 0 }
+core_dns=${ansible_group_core_k3s_lb[0]["private_ip"]}
+%{ endif }
+core_k3s_subdomain=core
+ansible_user=ubuntu
+ansible_become=true
+
+[core_net:children]
+core_control
+core_k3s
+customer_edge
+
+[core_control]
+%{ for host in ansible_group_control_host ~}
+${host["name"]} ansible_host=${host["private_ip"]}
+%{ endfor ~}
+
+[oxy_carrier]
+%{ for host in ansible_group_oxy_carrier ~}
+${host["name"]} ansible_host=${host["private_ip"]}
+%{ endfor ~}
+
+[core_k3s:vars]
+%{ if length(ansible_group_core_k3s_lb) > 0 }
+cluster_name=${core_k3s_cluster_name}
+pod_network_block=${core_k3s_networking["pod_network_block"]}
+#lb_vrrp_ip=${core_k3s_networking["lb_vrrp_ip"]}
+lb_vrrp_ip=${ansible_group_core_k3s_lb[0]["private_ip"]}
+%{ endif }
+
+[core_k3s:children]
+core_k3s_masters
+core_k3s_workers
+core_k3s_lb
+
+[core_k3s_lb]
+%{ for host in ansible_group_core_k3s_lb ~}
+${host["name"]} ansible_host=${host["private_ip"]}
+%{ endfor ~}
+
+[core_k3s_masters]
+%{ for host in ansible_group_core_k3s_masters ~}
+${host["name"]} ansible_host=${host["private_ip"]}
+%{ endfor ~}
+
+[core_k3s_workers]
+%{ for host in ansible_group_core_k3s_workers ~}
+${host["name"]} ansible_host=${host["private_ip"]}
+%{ endfor ~}
+
+#
+# ENGINES SUBNET
+#
+
+[engines:children]
+engines_win
+engines_lnx
+
+[engines:vars]
+engines_subnet=${engines_priv_subnet}
+internet=${engines_priv_subnet_internet}
+
+# : LNX HOSTS
+[engines_lnx:children]
+engines_lnx_metadata
+engines_lnx_dataml
+engines_lnx_pestatic
+engines_lnx_extractor
+
+[engines_lnx:vars]
+ansible_user=ubuntu
+ansible_become=true
+
+[engines_lnx_metadata]
+%{ for host in ansible_group_lnx_metadata ~}
+${host["name"]} ansible_host=${host["private_ip"]}
+%{ endfor ~}
+
+[engines_lnx_metadata:vars]
+app_ext_port=${engine_fta_networking["port"]}
+app_proto=${engine_fta_networking["proto"]}
+
+[engines_lnx_dataml]
+%{ for host in ansible_group_lnx_dataml ~}
+${host["name"]} ansible_host=${host["private_ip"]}
+%{ endfor ~}
+
+[engines_lnx_dataml:vars]
+app_ext_port=${engine_hc_networking["port"]}
+app_proto=${engine_hc_networking["proto"]}
+
+[engines_lnx_pestatic]
+%{ for host in ansible_group_lnx_pestatic ~}
+${host["name"]} ansible_host=${host["private_ip"]}
+%{ endfor ~}
+
+[engines_lnx_pestatic:vars]
+app_ext_port=${engine_ps_networking["port"]}
+app_proto=${engine_ps_networking["proto"]}
+
+[engines_lnx_extractor]
+%{ for host in ansible_group_lnx_extractor ~}
+${host["name"]} ansible_host=${host["private_ip"]}
+%{ endfor ~}
+
+[engines_lnx_extractor:vars]
+app_ext_port=${engine_ex_networking["port"]}
+app_proto=${engine_ex_networking["proto"]}
+
+# : WIN HOSTS
+[engines_win:children]
+engines_eset
+engines_bitdefender
+engines_windefender
+engines_winextractor
+engines_wincdr
+
+[engines_win:vars]
+ansible_user=Administrator
+ansible_shell_type=powershell
+
+[engines_eset]
+%{ for host in ansible_group_win_eset ~}
+${host["name"]} ansible_host=${host["private_ip"]} public_ip=${host["public_ip"]}
+%{ endfor ~}
+
+[engines_eset:vars]
+app_ext_port=${engine_win_eset_networking["port"]}
+app_proto=${engine_win_eset_networking["proto"]}
+
+[engines_bitdefender]
+%{ for host in ansible_group_win_bitdefender ~}
+${host["name"]} ansible_host=${host["private_ip"]} public_ip=${host["public_ip"]}
+%{ endfor ~}
+
+[engines_bitdefender:vars]
+app_ext_port=${engine_win_bitdefender_networking["port"]}
+app_proto=${engine_win_bitdefender_networking["proto"]}
+
+[engines_windefender]
+%{ for host in ansible_group_win_windefender ~}
+${host["name"]} ansible_host=${host["private_ip"]} public_ip=${host["public_ip"]}
+%{ endfor ~}
+
+[engines_windefender:vars]
+app_ext_port=${engine_win_windefender_networking["port"]}
+app_proto=${engine_win_windefender_networking["proto"]}
+
+[engines_winextractor]
+%{ for host in ansible_group_win_extractor ~}
+${host["name"]} ansible_host=${host["private_ip"]} public_ip=${host["public_ip"]}
+%{ endfor ~}
+
+[engines_winextractor:vars]
+app_ext_port=${engine_win_extractor_networking["port"]}
+app_proto=${engine_win_extractor_networking["proto"]}
+
+[engines_wincdr]
+%{ for host in ansible_group_win_cdr ~}
+${host["name"]} ansible_host=${host["private_ip"]} public_ip=${host["public_ip"]}
+%{ endfor ~}
+
+[engines_wincdr:vars]
+app_ext_port=${engine_win_cdr_networking["port"]}
+app_proto=${engine_win_cdr_networking["proto"]}
+
+
+[customer_edge:children]
+

@@ -1,0 +1,48 @@
+resource "local_file" "ansible_inventory" {
+  content = templatefile("templates/inventory.ini.tmpl",
+    {
+        region                            = var.region,
+        domain                            = var.domain,
+        lab                               = var.lab_name,
+        ansible_group_bastion             = module.bastion_host.nodes,
+        ansible_group_control_host        = module.control_host.nodes,
+        ansible_group_oxy_carrier         = module.oxy_carrier.nodes,
+        ansible_group_core_k3s_masters    = module.k3s_core_cluster.master_nodes,
+        ansible_group_core_k3s_workers    = module.k3s_core_cluster.worker_nodes,
+        ansible_group_core_k3s_lb         = module.k3s_core_cluster.loadbalancers,
+        ansible_group_lnx_metadata        = module.lnx_metadata.nodes,
+        ansible_group_lnx_dataml          = module.lnx_dataml.nodes,
+        ansible_group_lnx_pestatic        = module.lnx_pestatic.nodes,
+        ansible_group_lnx_extractor       = module.lnx_extractor.nodes,
+        ansible_group_win_eset            = module.win_eset.nodes,
+        ansible_group_win_bitdefender     = module.win_bitdefender.nodes,
+        ansible_group_win_windefender     = module.win_windefender.nodes,
+        ansible_group_win_extractor       = module.win_extractor.nodes,
+        ansible_group_win_cdr             = module.win_cdr.nodes,
+        # Add these two lines so the template keys exist:
+        ansible_group_dc                  = []          # not using active_directory
+        ansible_group_client              = []          # not using client
+        core_k3s_networking               = module.k3s_core_cluster.networking,
+        core_k3s_cluster_name             = module.k3s_core_cluster.cluster_name,
+        vpc_block                         = var.cidr_vpc_block,
+        entry_pub_subnet_id               = var.entry_pub_subnet_id,
+        vpc_id                            = var.vpc_id,
+        core_priv_subnet_id               = var.core_priv_subnet_id,
+        core_priv_subnet                  = var.core_priv_subnet["cidr_block"],
+        core_priv_subnet_internet         = var.core_priv_subnet["internet"],
+        entry_pub_subnet                  = var.entry_pub_subnet["cidr_block"],
+        engines_priv_subnet               = var.engines_priv_subnet["cidr_block"],
+        engines_priv_subnet_internet      = var.engines_priv_subnet["internet"],
+        engine_fta_networking             = module.lnx_metadata.app_network,
+        engine_hc_networking              = module.lnx_dataml.app_network,
+        engine_ps_networking              = module.lnx_pestatic.app_network,
+        engine_ex_networking              = module.lnx_extractor.app_network,
+        engine_win_eset_networking        = module.win_eset.app_network,
+        engine_win_bitdefender_networking = module.win_bitdefender.app_network,
+        engine_win_windefender_networking = module.win_windefender.app_network,
+        engine_win_extractor_networking   = module.win_extractor.app_network,
+        engine_win_cdr_networking         = module.win_cdr.app_network
+    }
+  )
+  filename = "/tmp/inventory.ini"
+}
